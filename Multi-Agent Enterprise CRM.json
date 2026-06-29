@@ -1,0 +1,702 @@
+{
+  "name": "Multi-Agent Enterprise CRM",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-capture",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        0
+      ],
+      "id": "a56f0a56-71ce-441f-9ab7-ae8522d69051",
+      "name": "Webhook",
+      "webhookId": "e23b288d-cec1-4ca1-997a-9f1b6ee819ef"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        512,
+        80
+      ],
+      "id": "e24435bb-3b1a-4318-91aa-0707332b7a39",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "v8XzLvMZE7k0znjM",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1PYXiHklshTKcKkbjE6jAI2tbukHbOiIJNHacD6vltFo",
+          "mode": "list",
+          "cachedResultName": "AI Lead Management System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PYXiHklshTKcKkbjE6jAI2tbukHbOiIJNHacD6vltFo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PYXiHklshTKcKkbjE6jAI2tbukHbOiIJNHacD6vltFo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Webhook').item.json.body.name }}",
+            "Email": "={{ $('Webhook').item.json.body.email }}",
+            "Phone": "={{ $('Webhook').item.json.body.phone }}",
+            "Requirement": "={{ $('Webhook').item.json.body.requirement }}",
+            "AI Response": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Requirement",
+              "displayName": "Requirement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Response",
+              "displayName": "AI Response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        -128
+      ],
+      "id": "384793cf-ae7b-49ba-85c3-8491a04fa806",
+      "name": "Store Lead",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ojlxaL0GwZKklEVn",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=alishbasiraj09@gmail.com",
+        "subject": "=Custom Software Proposal for {{ $json.Name }}",
+        "message": "=Dear {{ $json.Name }},<br><br>\n\nThank you for reaching out to us. Based on your business requirements, our team has curated a custom solution proposal for you:<br><br>\n\n{{ $json[\"AI Response\"] }}<br><br>\n\nWe would love to jump on a quick 15-minute discovery call to discuss this further. Please let us know your availability.<br><br>\n\nBest regards,<br>\n<b>Enterprise CRM Sales Team</b>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        992,
+        -128
+      ],
+      "id": "ad292ec6-9b35-4f4b-a94c-75913da31ffe",
+      "name": "Send Email Personalized",
+      "webhookId": "e03b2cdb-ca2c-40b3-ab91-d7a0dd272dfa",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hFlsVe1fCYUgInBj",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"You are an advanced enterprise CRM router. Your only job is to analyze the customer's incoming message and classify it into one of two categories: 'Sales' or 'Support'.\n\nOutput 'Sales' if the customer wants to buy something, inquires about pricing/budgets, requests a feature, or wants a custom software/app/website built.\n\nOutput 'Support' if the customer is facing an issue, error, bug, wants technical help, or is complaining about something.\n\nRespond with ONLY ONE WORD: either 'Sales' or 'Support'. Do not write any other sentence or explanation.\" {{ $json.body.requirement }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "24dd689e-7f52-4e0c-b2cb-f93ee453455e",
+      "name": "AI Router"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        224
+      ],
+      "id": "104e7dcc-4241-4339-bd27-5b552ceebdbf",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "v8XzLvMZE7k0znjM",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "Sales",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "54b8d80a-3015-4937-a6c2-a0a1fb1b81fa"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b954c949-07d0-4518-8235-48292d5a97e2",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "Support",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        0
+      ],
+      "id": "21cc6ac1-8c1e-4fb0-8794-c1600ffbf41d",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        512,
+        464
+      ],
+      "id": "e706e75e-2e2e-4de6-9371-dfbc7f197b83",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "v8XzLvMZE7k0znjM",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"You are an expert Enterprise CRM Support Agent. Your job is to resolve customer queries, technical issues, or complaints professionally.\nAnalyze the customer's problem, draft a polite and helpful response resolving their issue, and output the final response text clearly.\" {{ $('Webhook').item.json.body.requirement }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        512,
+        240
+      ],
+      "id": "baf87d4c-1a51-43d3-8d03-523af395fb6c",
+      "name": "Support Agent"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1PYXiHklshTKcKkbjE6jAI2tbukHbOiIJNHacD6vltFo",
+          "mode": "list",
+          "cachedResultName": "AI Lead Management System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PYXiHklshTKcKkbjE6jAI2tbukHbOiIJNHacD6vltFo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 6409717,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PYXiHklshTKcKkbjE6jAI2tbukHbOiIJNHacD6vltFo/edit#gid=6409717"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Name": "={{ $('Webhook').item.json.body.name }}",
+            "Customer Issue": "={{ $('Webhook').item.json.body.requirement }}",
+            "AI Solution": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Issue",
+              "displayName": "Customer Issue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Solution",
+              "displayName": "AI Solution",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        800,
+        240
+      ],
+      "id": "1f33913a-88bd-4824-8673-0e7312a7416d",
+      "name": "Store Ticket Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ojlxaL0GwZKklEVn",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "alishbasiraj09@gmail.com",
+        "subject": "=Support Request Update -  {{ $('Webhook').item.json.body.name }}",
+        "message": "=Dear {{ $('Webhook').item.json.body.name }},<br><br>\n\nThank you for contacting our support team. We have received your query regarding your issue:<br>\n<i>\"{{ $('Webhook').item.json.body.requirement }}\"</i><br><br>\n\nOur team has reviewed your request, and here is the initial troubleshooting guidance and response for you:<br><br>\n\n{{ $('Support Agent').item.json.output }}<br><br>\n\nIf you have tried the steps above and are still facing the issue, please reply directly to this email so our technical team can assist you further.<br><br>\n\nBest regards,<br>\n<b>Enterprise CRM Support Team</b>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        240
+      ],
+      "id": "69e1419d-b795-4bac-9c8e-d9a3f8699bbd",
+      "name": "Send a message",
+      "webhookId": "b3351fee-6f25-40a8-9baf-c0f1824c12d3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hFlsVe1fCYUgInBj",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"You are an expert Enterprise CRM Sales Agent. Your job is to analyze incoming business leads and requirements, qualify them, and draft a highly professional, persuasive sales response.\nReview the customer's details and requirements. Highlight how our services can help them, and provide a clear next step (like booking a discovery call or sharing a custom quote). Keep the tone professional, welcoming, and business-focused. \nDo NOT include any Subject line, greetings (like Dear Customer), placeholders, or sign-offs (like Best regards) in your output. Just output the core solution text, features, and the recommended budget proposal directly. Output ONLY the raw response body text.{{ $('Webhook').item.json.body.requirement }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        512,
+        -128
+      ],
+      "id": "735d3d1a-07cb-4780-88d1-2d726afe37b3",
+      "name": "Sales Agent"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1RPcftVm3B0smSiey_utci16S1jdM1UxfqAqCCOmQBRY",
+          "mode": "list",
+          "cachedResultName": "Audit Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RPcftVm3B0smSiey_utci16S1jdM1UxfqAqCCOmQBRY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RPcftVm3B0smSiey_utci16S1jdM1UxfqAqCCOmQBRY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now }}",
+            "Action": "={{ $('Webhook').item.json.body.requirement }}",
+            "Customer Email": "={{ $('Webhook').item.json.body.email }}",
+            "Status": "Success",
+            "Agent": "={{ $('Switch').item.json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Action",
+              "displayName": "Action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Email",
+              "displayName": "Customer Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1200,
+        48
+      ],
+      "id": "d4885be0-baa9-403b-8d9e-17ebce1ac80f",
+      "name": "Audit log",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ojlxaL0GwZKklEVn",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.email }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        608,
+        80
+      ],
+      "id": "9ddd50b2-2c83-4171-8d82-094748080e22",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.email }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        608,
+        464
+      ],
+      "id": "3187f131-5970-44a2-83ad-79e4c72f35e4",
+      "name": "Simple Memory1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sales Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Lead": {
+      "main": [
+        [
+          {
+            "node": "Send Email Personalized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Personalized": {
+      "main": [
+        [
+          {
+            "node": "Audit log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Router",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Router": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Sales Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Support Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Support Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Support Agent": {
+      "main": [
+        [
+          {
+            "node": "Store Ticket Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Ticket Data": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sales Agent": {
+      "main": [
+        [
+          {
+            "node": "Store Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Audit log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Sales Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Support Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6e430380-6873-4a2e-a67e-ee1b1ca6d00c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33c64d451aa06eba59242bfe34c9ad073b47e184695ef70daf15428ef2dc7737"
+  },
+  "nodeGroups": [],
+  "id": "k7RHYYJMjiKdfmih",
+  "tags": []
+}
