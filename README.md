@@ -15,3 +15,4 @@ An advanced, production-ready AI-driven CRM automation system built with **n8n**
 
 ---
 
+<img width="1134" height="470" alt="Image" src="https://github.com/user-attachments/assets/7eba383f-619e-4f1e-a96a-6ecf6454be56" />
